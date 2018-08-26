@@ -1,0 +1,6 @@
+**/__pycache__/**
+venv
+package-lock.json
+/build
+/node_modules
+/.idea

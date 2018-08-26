@@ -1,0 +1,26 @@
+{
+  "name": "muzika-ontology-contract",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "init": "npm run init:python",
+    "init:python": "cd contracts && virtualenv venv && . venv/*/activate && pip install -r requirements.txt",
+    "clean": "npm run clean:python && npm run clean:build",
+    "clean:python": "cd contracts && rm -rf venv",
+    "clean:build": "rm -rf build",
+    "build": "cd contracts && . venv/*/activate && python compile.py -o ../build ./contracts/*.py",
+    "rebuild": "npm run clean && npm run init && npm run build"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/command-line-args": "^5.0.0",
+    "@types/node": "^10.9.2",
+    "command-line-args": "^5.0.2",
+    "typescript": "^3.0.1"
+  },
+  "dependencies": {
+    "ontology-ts-sdk": "^0.9.3"
+  }
+}

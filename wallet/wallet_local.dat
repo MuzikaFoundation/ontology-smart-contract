@@ -1,0 +1,31 @@
+{
+  "name":"MyWallet",
+  "version":"1.1",
+  "createTime":"",
+  "defaultAccountAddress":"",
+  "defaultOntid":"",
+  "identities": [],
+  "scrypt":{
+    "p":8,
+    "n":16384,
+    "r":8,
+    "dkLen":64
+  },
+  "accounts": [
+    {
+      "address":"AHmMXuCARpydrg8erE9FeSsoufgbYgbf1T",
+      "enc-alg":"aes-256-gcm",
+      "key":"3nbWQfRmlFP3dE7CKLHTscBdJzHwACnC060jpZu3fAseDdGSGPsa2Z9l84h3yNRl",
+      "algorithm":"ECDSA",
+      "salt":"wr+QoIcXqWaTu+kowUG3Ng==",
+      "parameters": {
+        "curve":"P-256"
+      },
+      "label":"",
+      "publicKey":"03b05baf06ac185a03085f371543924db15ca16988762c522f58031d4bd0b04cc4",
+      "signatureScheme":"SHA256withECDSA",
+      "isDefault":true,
+      "lock":false
+    }
+  ]
+}
