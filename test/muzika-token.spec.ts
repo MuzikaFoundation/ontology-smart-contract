@@ -14,7 +14,6 @@ import { waitForTransactionReceipt } from "../utils/transaction";
 import chai from 'chai';
 import { num2ByteArray } from "../utils/big-number";
 
-const assert = chai.assert;
 chai.should();
 
 describe('MuzikaCoin Contract', () => {
@@ -26,14 +25,8 @@ describe('MuzikaCoin Contract', () => {
 
   let randomAccount: { privateKey: Crypto.PrivateKey, address: Crypto.Address }[] = [];
 
+  let isDeployed: () => Promise<boolean>;
   let getOwner: () => Promise<Crypto.Address>;
-
-  let transferOwnership: (
-    address: Crypto.Address,
-    privateKey: Crypto.PrivateKey,
-    payer: Crypto.Address
-  ) => Promise<void>;
-
   let totalSupply: () => Promise<BigNumber>;
 
   let getBalance: (
@@ -83,11 +76,23 @@ describe('MuzikaCoin Contract', () => {
     payer: Crypto.Address
   ) => Promise<void>;
 
+  let transferOwnership: (
+    address: Crypto.Address,
+    privateKey: Crypto.PrivateKey,
+    payer: Crypto.Address
+  ) => Promise<void>;
+
   before (async () => {
     // deploy the contract.
     contract = await TestDeployer.deploy('MuzikaCoin');
     await contract.deployed();
     client = TestDeployer.client;
+
+    isDeployed = async () => {
+      const key = utils.str2hexstr('DEPLOYED');
+      const value = (await client.getStorage(contract.codeHash, key)).result;
+      return (value !== null);
+    };
 
     getOwner = async () => {
       const key = utils.str2hexstr('___OWNER');
@@ -117,7 +122,8 @@ describe('MuzikaCoin Contract', () => {
     };
 
     totalSupply = async () => {
-      return new BigNumber(utils.reverseHex((await client.getStorage(contract.codeHash, utils.str2hexstr('__SUPPLY'))).result), 16);
+      const hexValue = (await client.getStorage(contract.codeHash, utils.str2hexstr('__SUPPLY'))).result;
+      return new BigNumber((hexValue === null) ? '0' : utils.reverseHex(hexValue), 16);
     };
 
     getBalance = async (
@@ -275,7 +281,7 @@ describe('MuzikaCoin Contract', () => {
     await waitForTransactionReceipt(client, txHash);
 
     // since the address is not deployer, this transaction must be rejected.
-    assert((await client.getStorage(contract.codeHash, utils.str2hexstr('DEPLOYED'))).result === null);
+    (await isDeployed()).should.be.equal(false);
   });
 
   it ('should deploy by deployer', async () => {
@@ -287,11 +293,11 @@ describe('MuzikaCoin Contract', () => {
     const txHash = (await client.sendRawTransaction(tx.serialize())).result;
     await waitForTransactionReceipt(client, txHash);
 
-    assert((await client.getStorage(contract.codeHash, utils.str2hexstr('DEPLOYED'))).result !== null);
+    (await isDeployed()).should.be.equal(true);
   });
 
   it ('should be owned by deployer', async () => {
-    assert((await client.getStorage(contract.codeHash, utils.str2hexstr('___OWNER'))).result === TestDeployer.forSign.address.serialize());
+    (await getOwner()).toBase58().should.be.equal(address.toBase58());
   });
 
   it ('should supply all tokens to the deployer', async () => {
@@ -370,8 +376,8 @@ describe('MuzikaCoin Contract', () => {
 
     // the total supply should be equal since `burn` is called by other, not owner, so
     // the transaction should be rejected.
-    assert(supplyAfterBurned.toString() !== null);
-    assert(supplyBeforeBurned.toString() === supplyAfterBurned.toString());
+    supplyAfterBurned.toString().should.be.not.equal('0');
+    supplyBeforeBurned.toString().should.be.equal(supplyAfterBurned.toString());
   });
 
   it ('should not burn minus value', async () => {
