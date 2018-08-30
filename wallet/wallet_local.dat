@@ -4,7 +4,8 @@
   "createTime":"",
   "defaultAccountAddress":"",
   "defaultOntid":"",
-  "identities": [],
+  "identities": [
+  ],
   "scrypt":{
     "p":8,
     "n":16384,
@@ -25,6 +26,19 @@
       "publicKey":"03b05baf06ac185a03085f371543924db15ca16988762c522f58031d4bd0b04cc4",
       "signatureScheme":"SHA256withECDSA",
       "isDefault":true,
+      "lock":false
+    },
+    {
+      "address":"AK5qXBpCDAhoGMCzqSeVEJWvkjFDPdZJTA",
+      "enc-alg":"aes-256-gcm",
+      "key":"8BldEGFaLLp3uaXa1+JzkeSfnTIgwJFeLJ4aWt/Bq4/6zy++IiYVTV5MiD2t0kjY",
+      "algorithm":"ECDSA",
+      "salt":"2hKRvhWmZhr8yVaBU4dTeQ==",
+      "parameters":{"curve":"P-256"},
+      "label":"",
+      "publicKey":"03091aaf521a8ffd6888c6090f8551a7687d52b92eaeb2ed7c68867f01834110cf",
+      "signatureScheme":"SHA256withECDSA",
+      "isDefault":false,
       "lock":false
     }
   ]

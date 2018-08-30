@@ -1,5 +1,6 @@
 {
   "avmFiles": "build/**/*.avm",
+  "testNetwork": "local",
   "network": {
     "local": {
       "method": "rpc",

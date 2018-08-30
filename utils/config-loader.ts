@@ -1,11 +1,13 @@
 
 import {Wallet, Account, Crypto, RestClient, RpcClient, WebsocketClient} from 'ontology-ts-sdk';
-import { join } from 'path';
-import { readFileSync } from 'fs';
+import { join, parse } from 'path';
+import { readFileSync, readFile } from 'fs';
+import * as glob from 'glob';
 
 import { OntologyConfig } from './models';
 
 export class ConfigLoader {
+  avm: { [contract: string]: string } = {};
   client: RestClient | RpcClient | WebsocketClient;
   forSign: {
     address: Crypto.Address,
@@ -17,8 +19,20 @@ export class ConfigLoader {
     private mode: string,
     private workingDirectory: string
   ) {
+    this.loadAvm();
     this.loadClient();
     this.loadAccount();
+  }
+
+  private loadAvm(): void {
+    const matchFiles = glob.sync(
+      join(this.workingDirectory, this.options.avmFiles), { ignore: '**/node_modules/**', absolute: true }
+    );
+
+    matchFiles.forEach((filePath: string) => {
+      const basename = parse(filePath).name;
+      Object.assign(this.avm, { [basename]: readFileSync(filePath).toString('hex') });
+    });
   }
 
   private loadClient(): void {
@@ -75,3 +89,6 @@ export class ConfigLoader {
     return this.options.network[this.mode];
   }
 }
+
+const defaultConfig = require(join(__dirname, '..', 'ontology.json'));
+export const TestConfig = new ConfigLoader(defaultConfig, defaultConfig.testNetwork, join(__dirname, '..'));

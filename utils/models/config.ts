@@ -1,6 +1,6 @@
 
 export interface OntologyConfig {
-  avm: string;
+  avmFiles: string;
   network: {
     [networkType: string]: {
       method: 'rpc' | 'rest' | 'websocket';

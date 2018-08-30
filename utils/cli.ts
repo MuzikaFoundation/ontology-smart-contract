@@ -1,6 +1,10 @@
 
 import { join } from 'path';
 import { ConfigLoader } from './config-loader';
+import { Deployer } from './deployer';
+import * as glob from 'glob';
+
+const chalk = require('chalk');
 
 const commandLineArgs = require('command-line-args');
 
@@ -19,6 +23,9 @@ async function main() {
   );
 
   if (options.deploy) {
+    const deployer = new Deployer(config);
+    const deployScripts = glob.sync(join(__dirname, '..', 'migrations', '*.ts'));
+    deployScripts.forEach((script) => require(script)(deployer));
   }
 }
 

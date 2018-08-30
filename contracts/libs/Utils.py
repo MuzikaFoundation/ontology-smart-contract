@@ -1,6 +1,7 @@
 
 from boa.interop.System.Storage import Put, Delete
 
+
 def Revert():
     """
     Revert the transaction. The opcodes of this function is `09f7f6f5f4f3f2f1f000f0`,
@@ -11,7 +12,7 @@ def Revert():
 
 
 def SafePut(context, key, value):
-    if key == 0x00:
+    if value == 0:
         Delete(context, key)
     else:
         Put(context, key, value)
