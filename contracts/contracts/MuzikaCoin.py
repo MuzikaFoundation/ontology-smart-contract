@@ -57,6 +57,8 @@ def Main(operation, args):
     elif operation == 'Transfer':
         if len(args) == 3:
             return Transfer(args[0], args[1], args[2])
+    elif operation == 'TransferMulti':
+        return TransferMulti(args)
     elif operation == 'TransferFrom':
         if len(args) == 4:
             return TransferFrom(args[0], args[1], args[2], args[3])
@@ -135,6 +137,18 @@ def Transfer(_from, _to, _value):
     """
     RequireWitness(_from)           # from address validation
     return _transfer(GetContext(), _from, _to, _value)
+
+
+def TransferMulti(args):
+    """
+    Sends tokens to the several people.
+
+    :param args: transfer arguments array
+    """
+    for p in range(args):
+        Require(len(p) == 3)
+        Transfer(p[0], p[1], p[2])
+    return True
 
 
 def TransferFrom(_originator, _from, _to, _amount):

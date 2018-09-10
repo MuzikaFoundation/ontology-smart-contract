@@ -54,6 +54,12 @@ describe('MuzikaCoin Contract', () => {
     payer?: Crypto.Address
   ) => Promise<any>;
 
+  let transferMulti: (
+    _transferArray: { _from: Crypto.Address, _to: Crypto.Address, _amount: BigNumber | string } [],
+    privateKey: Crypto.PrivateKey,
+    payer?: Crypto.Address
+  ) => Promise<any>;
+
   let transferFrom: (
     _originator: Crypto.Address,
     _from: Crypto.Address,
@@ -193,6 +199,33 @@ describe('MuzikaCoin Contract', () => {
       await waitForTransactionReceipt(client, txHash);
     };
 
+    transferMulti = async (
+      _transferArray: { _from: Crypto.Address, _to: Crypto.Address, _amount: BigNumber | string } [],
+      privateKey: Crypto.PrivateKey,
+      payer?: Crypto.Address
+    ) => {
+      const tx = TransactionBuilder.makeInvokeTransaction(
+        'TransferMulti',
+        [
+          new Parameter('args', ParameterType.Array, _transferArray.map((transferParam) => {
+            return [
+              new Parameter('_from', ParameterType.ByteArray, transferParam._from),
+              new Parameter('_to', ParameterType.ByteArray, transferParam._to),
+              new Parameter('_amount', ParameterType.ByteArray, transferParam._amount)
+            ]})
+          )
+        ],
+        contract.address,
+        '0',
+        '20000',
+        payer
+      );
+
+      TransactionBuilder.signTransaction(tx, privateKey);
+      const txHash = (await client.sendRawTransaction(tx.serialize())).result;
+      await waitForTransactionReceipt(client, txHash);
+    };
+
     transferFrom = async (
       _originator: Crypto.Address,
       _from: Crypto.Address,
@@ -313,6 +346,34 @@ describe('MuzikaCoin Contract', () => {
     await transfer(address, other.address, transferValue, privateKey);
 
     (await getBalance(other.address)).toString().should.be.equal(transferValue.toString());
+  });
+
+  it ('should transfer tokens to multiple people', async () => {
+    const others = randomAccount.slice(3);
+    const transferValues = others.map((other, index) => new BigNumber(100 + index * 100));
+    const othersBeforeAmount = new Array(others.length);
+    const othersAfterAmount = new Array(others.length);
+
+    // get all account balances before transfer
+    await Promise.all(others.map((other, index) => async () => {
+      othersBeforeAmount[index] = await getBalance(other.address);
+    }));
+
+    // transfer multi
+    await transferMulti(others.map((other, index) => {
+      return {_from: address, _to: other.address, _amount: transferValues[index]};
+    }), privateKey, address);
+
+    // get all account balances before transfer
+    await Promise.all(others.map((other, index) => async () => {
+      othersAfterAmount[index] = await getBalance(other.address);
+    }));
+
+    // check all transferred
+    others.forEach((other, index) => {
+      othersBeforeAmount[index].plus(transferValues[index]).toString()
+        .should.be.equals(othersAfterAmount[index].toString());
+    });
   });
 
   it ('should not transfer from other account', async () => {
