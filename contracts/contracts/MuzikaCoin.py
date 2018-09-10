@@ -1,4 +1,4 @@
-
+from boa.interop.System.Runtime import Notify
 from boa.interop.System.Storage import *
 from boa.builtins import *
 
@@ -103,9 +103,10 @@ def Deploy():
     Put(ctx, OWNER_KEY, DEPLOYER)
 
     # supply the coin. All coin will be belong to deployer.
-    Put(ctx, MZK_SUPPLY_KEY, INIT_SUPPLY * FACTOR)
-    Put(ctx, concat(OWN_PREFIX, DEPLOYER), INIT_SUPPLY * FACTOR)
-
+    total = INIT_SUPPLY * FACTOR
+    Put(ctx, MZK_SUPPLY_KEY, total)
+    Put(ctx, concat(OWN_PREFIX, DEPLOYER), total)
+    Notify(['transfer', '', DEPLOYER, total])
     return True
 
 
@@ -136,7 +137,9 @@ def Transfer(_from, _to, _value):
     :param _value: MZK amount.
     """
     RequireWitness(_from)           # from address validation
-    return _transfer(GetContext(), _from, _to, _value)
+    _transfer(GetContext(), _from, _to, _value)
+    Notify(['transfer', _from, _to, _value])
+    return True
 
 
 def TransferMulti(args):
@@ -161,7 +164,9 @@ def TransferFrom(_originator, _from, _to, _amount):
     :param _to: address to receive.
     :param _amount: MZK amount.
     """
-    return _transferFrom(GetContext(), _originator, _from, _to, _amount)
+    _transferFrom(GetContext(), _originator, _from, _to, _amount)
+    Notify(['transfer', _from, _to, _amount])
+    return True
 
 
 def Approve(_from, _to, _amount):
@@ -174,7 +179,9 @@ def Approve(_from, _to, _amount):
     :param _amount: MZK amount to approve.
     """
     RequireWitness(_from)       # only the token owner can approve
-    return _approve(GetContext(), _from, _to, _amount)
+    _approve(GetContext(), _from, _to, _amount)
+    Notify(['approve', _from, _to, _amount])
+    return True
 
 
 def Burn(_amount):
