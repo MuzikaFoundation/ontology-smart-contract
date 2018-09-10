@@ -112,7 +112,7 @@ describe('MuzikaCoin Contract', () => {
       payer: Crypto.Address
     ) => {
       const tx = TransactionBuilder.makeInvokeTransaction(
-        'TransferOwnership',
+        'transferOwnership',
         [
           new Parameter('_account', ParameterType.ByteArray, address.serialize())
         ],
@@ -148,7 +148,7 @@ describe('MuzikaCoin Contract', () => {
       payer: Crypto.Address
     ) => {
       const tx = TransactionBuilder.makeInvokeTransaction(
-        'Approve',
+        'approve',
         [
           new Parameter('_from', ParameterType.ByteArray, _from.serialize()),
           new Parameter('_to', ParameterType.ByteArray, _to.serialize()),
@@ -183,7 +183,7 @@ describe('MuzikaCoin Contract', () => {
       payer?: Crypto.Address
     ) => {
       const tx = TransactionBuilder.makeInvokeTransaction(
-        'Transfer',
+        'transfer',
         [
           new Parameter('_from', ParameterType.ByteArray, _from.serialize()),
           new Parameter('_to', ParameterType.ByteArray, _to.serialize()),
@@ -205,14 +205,13 @@ describe('MuzikaCoin Contract', () => {
       payer?: Crypto.Address
     ) => {
       const tx = TransactionBuilder.makeInvokeTransaction(
-        'TransferMulti',
+        'transferMulti',
         [
-          new Parameter('args', ParameterType.Array, _transferArray.map((transferParam) => {
-            return [
+          new Parameter('args', ParameterType.Array, _transferArray.map((transferParam) => [
               new Parameter('_from', ParameterType.ByteArray, transferParam._from),
               new Parameter('_to', ParameterType.ByteArray, transferParam._to),
               new Parameter('_amount', ParameterType.ByteArray, transferParam._amount)
-            ]})
+            ])
           )
         ],
         contract.address,
@@ -235,7 +234,7 @@ describe('MuzikaCoin Contract', () => {
       payer?: Crypto.Address
     ) => {
       const tx = TransactionBuilder.makeInvokeTransaction(
-        'TransferFrom',
+        'transferFrom',
         [
           new Parameter('_originator', ParameterType.ByteArray, _originator.serialize()),
           new Parameter('_from', ParameterType.ByteArray, _from.serialize()),
@@ -259,7 +258,7 @@ describe('MuzikaCoin Contract', () => {
       payer: Crypto.Address
     ) => {
       const tx = TransactionBuilder.makeInvokeTransaction(
-        'Burn',
+        'burn',
         [
           new Parameter('_amount', ParameterType.ByteArray, num2ByteArray(_amount))
         ],
@@ -281,7 +280,7 @@ describe('MuzikaCoin Contract', () => {
       payer: Crypto.Address
     ) => {
       const tx = TransactionBuilder.makeInvokeTransaction(
-        'Mint',
+        'mint',
         [
           new Parameter('_to', ParameterType.ByteArray, _to.serialize()),
           new Parameter('_amount', ParameterType.ByteArray, num2ByteArray(_amount))
@@ -348,7 +347,7 @@ describe('MuzikaCoin Contract', () => {
     (await getBalance(other.address)).toString().should.be.equal(transferValue.toString());
   });
 
-  it ('should transfer tokens to multiple people', async () => {
+  it ('should transfer tokens to multiple addresses', async () => {
     const others = randomAccount.slice(3);
     const transferValues = others.map((other, index) => new BigNumber(100 + index * 100));
     const othersBeforeAmount = new Array(others.length);
@@ -364,7 +363,7 @@ describe('MuzikaCoin Contract', () => {
       return {_from: address, _to: other.address, _amount: transferValues[index]};
     }), privateKey, address);
 
-    // get all account balances before transfer
+    // get all account balances after transfer
     await Promise.all(others.map((other, index) => async () => {
       othersAfterAmount[index] = await getBalance(other.address);
     }));
