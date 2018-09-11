@@ -148,7 +148,7 @@ def TransferMulti(args):
 
     :param args: transfer arguments array
     """
-    for p in range(args):
+    for p in (args):
         Require(len(p) == 3)
         Transfer(p[0], p[1], p[2])
     return True
