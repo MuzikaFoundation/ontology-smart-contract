@@ -42,7 +42,8 @@ ALLOWANCE_PREFIX = '___allow'
 
 def Main(operation, args):
     if operation == 'deploy':
-        return Deploy()
+        ret = Deploy()
+        return ret
     elif operation == 'name':
         return TOKEN_NAME
     elif operation == 'decimals':
@@ -50,33 +51,43 @@ def Main(operation, args):
     elif operation == 'symbol':
         return TOKEN_SYMBOL
     elif operation == 'totalSupply':
-        return TotalSupply()
+        ret = TotalSupply()
+        return ret
     elif operation == 'balanceOf':
         if len(args) == 1:
-            return BalanceOf(args[0])
+            ret = BalanceOf(args[0])
+            return ret
     elif operation == 'transfer':
         if len(args) == 3:
-            return Transfer(args[0], args[1], args[2])
+            ret = Transfer(args[0], args[1], args[2])
+            return ret
     elif operation == 'transferMulti':
-        return TransferMulti(args)
+        ret = TransferMulti(args)
+        return ret
     elif operation == 'transferFrom':
         if len(args) == 4:
-            return TransferFrom(args[0], args[1], args[2], args[3])
+            ret = TransferFrom(args[0], args[1], args[2], args[3])
+            return ret
     elif operation == 'approve':
         if len(args) == 3:
-            return Approve(args[0], args[1], args[2])
+            ret = Approve(args[0], args[1], args[2])
+            return ret
     elif operation == 'allowance':
         if len(args) == 2:
-            return Allowance(args[0], args[1])
+            ret = Allowance(args[0], args[1])
+            return ret
     elif operation == 'mint':
         if len(args) == 2:
-            return Mint(args[0], args[1])
+            ret = Mint(args[0], args[1])
+            return ret
     elif operation == 'burn':
         if len(args) == 1:
-            return Burn(args[0])
+            ret = Burn(args[0])
+            return ret
     elif operation == 'transferOwnership':
         if len(args) == 1:
-            return TransferOwnership(args[0])
+            ret = TransferOwnership(args[0])
+            return ret
 
     return False
 
@@ -92,8 +103,10 @@ def Deploy():
     """
     ctx = GetContext()
 
-    Require(CheckWitness(DEPLOYER))         # only can be initialized by deployer
-    Require(not Get(ctx, 'DEPLOYED'))       # only can deploy once
+    is_witness = CheckWitness(DEPLOYER)
+    is_deployed = Get(ctx, 'DEPLOYED')
+    _ = Require(is_witness)                     # only can be initialized by deployer
+    _ = Require(not is_deployed)                # only can deploy once
 
     # disable to deploy again
     Put(ctx, 'DEPLOYED', 1)
@@ -105,7 +118,8 @@ def Deploy():
     # supply the coin. All coin will be belong to deployer.
     total = INIT_SUPPLY * FACTOR
     Put(ctx, MZK_SUPPLY_KEY, total)
-    Put(ctx, concat(OWN_PREFIX, DEPLOYER), total)
+    deployer_key = concat(OWN_PREFIX, DEPLOYER)
+    Put(ctx, deployer_key, total)
     Notify(['transfer', '', DEPLOYER, total])
     return True
 
@@ -115,7 +129,9 @@ def TotalSupply():
     Gets the total supply for MZK token. The total supply can be changed by
     owner's invoking function calls for minting and burning.
     """
-    return _totalSupply(GetContext())
+    ctx = GetContext()
+    total_supply = _totalSupply(ctx)
+    return total_supply
 
 
 def BalanceOf(account):
@@ -124,7 +140,9 @@ def BalanceOf(account):
 
     :param account: account
     """
-    return _balanceOf(GetContext(), account)
+    ctx = GetContext()
+    balance = _balanceOf(ctx, account)
+    return balance
 
 
 def Transfer(_from, _to, _value):
@@ -136,8 +154,9 @@ def Transfer(_from, _to, _value):
     :param _to: receiver address.
     :param _value: MZK amount.
     """
-    RequireWitness(_from)           # from address validation
-    _transfer(GetContext(), _from, _to, _value)
+    _ = RequireWitness(_from)           # from address validation
+    ctx = GetContext()
+    _ = _transfer(ctx, _from, _to, _value)
     Notify(['transfer', _from, _to, _value])
     return True
 
@@ -149,8 +168,9 @@ def TransferMulti(args):
     :param args: transfer arguments array
     """
     for p in (args):
-        Require(len(p) == 3)
-        Transfer(p[0], p[1], p[2])
+        arg_len = len(p)
+        _ = Require(arg_len == 3)
+        _ = Transfer(p[0], p[1], p[2])
     return True
 
 
@@ -164,7 +184,8 @@ def TransferFrom(_originator, _from, _to, _amount):
     :param _to: address to receive.
     :param _amount: MZK amount.
     """
-    _transferFrom(GetContext(), _originator, _from, _to, _amount)
+    ctx = GetContext()
+    _ = _transferFrom(ctx, _originator, _from, _to, _amount)
     Notify(['transfer', _from, _to, _amount])
     return True
 
@@ -178,8 +199,9 @@ def Approve(_from, _to, _amount):
     :param _to: address to approve.
     :param _amount: MZK amount to approve.
     """
-    RequireWitness(_from)       # only the token owner can approve
-    _approve(GetContext(), _from, _to, _amount)
+    _ = RequireWitness(_from)       # only the token owner can approve
+    ctx = GetContext()
+    _ = _approve(ctx, _from, _to, _amount)
     Notify(['approve', _from, _to, _amount])
     return True
 
@@ -190,8 +212,10 @@ def Burn(_amount):
     :param _amount: MZK amount to burn.
     """
     ctx = GetContext()
-    _onlyOwner(ctx)                             # only owner can burn the token
-    return _burn(ctx, Get(ctx, OWNER_KEY), _amount)
+    _ = _onlyOwner(ctx)                             # only owner can burn the token
+    owner_key = Get(ctx, OWNER_KEY)
+    burned = _burn(ctx, owner_key, _amount)
+    return burned
 
 
 def Mint(_to, _amount):
@@ -201,8 +225,9 @@ def Mint(_to, _amount):
     :param _amount: the amount to mint.
     """
     ctx = GetContext()
-    _onlyOwner(ctx)                 # only owner can mint token
-    return _mint(ctx, _to, _amount)
+    _ = _onlyOwner(ctx)                 # only owner can mint token
+    minted = _mint(ctx, _to, _amount)
+    return minted
 
 
 def TransferOwnership(_account):
@@ -212,7 +237,8 @@ def TransferOwnership(_account):
     """
     ctx = GetContext()
     _onlyOwner(ctx)
-    return _transferOwnership(ctx, _account)
+    transferred = _transferOwnership(ctx, _account)
+    return transferred
 
 
 def Allowance(_from, _to):
@@ -222,7 +248,9 @@ def Allowance(_from, _to):
     :param _to: to address
     :return: the amount of allowance.
     """
-    return _allowance(GetContext(), _from, _to)
+    ctx = GetContext()
+    allowance = _allowance(ctx, _from, _to)
+    return allowance
 
 
 ################################################################################
@@ -232,8 +260,8 @@ def Allowance(_from, _to):
 # witness if necessary.
 
 def _transfer(_context, _from, _to, _value):
-    Require(_value > 0)             # transfer value must be over 0
-    RequireScriptHash(_to)          # to-address validation
+    _ = Require(_value > 0)             # transfer value must be over 0
+    _ = RequireScriptHash(_to)          # to-address validation
 
     from_val = _accountValue(_context, _from)
     to_val = _accountValue(_context, _to)
@@ -241,68 +269,75 @@ def _transfer(_context, _from, _to, _value):
     from_val = uSub(from_val, _value)
     to_val = to_val + _value
 
-    SafePut(_context, concat(OWN_PREFIX, _from), from_val)
-    SafePut(_context, concat(OWN_PREFIX, _to), to_val)
+    from_key = concat(OWN_PREFIX, _from)
+    to_key = concat(OWN_PREFIX, _to)
+    _ = SafePut(_context, from_key, from_val)
+    _ = SafePut(_context, to_key, to_val)
 
     return True
 
 
 def _balanceOf(_context, _account):
-    RequireScriptHash(_account)
-    return Get(_context, concat(OWN_PREFIX, _account))
+    _ = RequireScriptHash(_account)
+    account_key = concat(OWN_PREFIX, _account)
+    balance = Get(_context, account_key)
+    return balance
 
 
 def _transferFrom(_context, _originator, _from, _to, _amount):
-    RequireWitness(_originator)
-    RequireScriptHash(_from)
-    RequireScriptHash(_to)
+    _ = RequireWitness(_originator)
+    _ = RequireScriptHash(_from)
+    _ = RequireScriptHash(_to)
 
-    Require(_amount > 0)
+    _ = Require(_amount > 0)
 
-    approve_key = concat(ALLOWANCE_PREFIX, concat(_from, _originator))
+    from_to_key = concat(_from, _originator)
+    approve_key = concat(ALLOWANCE_PREFIX, from_to_key)
     approve_amount = Get(_context, approve_key)
     approve_amount = uSub(approve_amount, _amount)
 
-    _transfer(_context, _from, _to, _amount)
-    SafePut(_context, approve_key, approve_amount)
+    _ = _transfer(_context, _from, _to, _amount)
+    _ = SafePut(_context, approve_key, approve_amount)
 
     return True
 
 
 def _approve(_context, _from, _to, _amount):
-    RequireScriptHash(_to)          # to-address validation
-    Require(_amount >= 0)           # amount must be not minus value
+    _ = RequireScriptHash(_to)          # to-address validation
+    _ = Require(_amount >= 0)           # amount must be not minus value
 
     from_val = _accountValue(_context, _from)
 
-    Require(from_val >= _amount)    # the token owner must have the amount over approved
+    _ = Require(from_val >= _amount)    # the token owner must have the amount over approved
 
-    approve_key = concat(ALLOWANCE_PREFIX, concat(_from, _to))
+    from_to_key = concat(_from, _to)
+    approve_key = concat(ALLOWANCE_PREFIX, from_to_key)
     SafePut(_context, approve_key, _amount)
 
     return True
 
 
 def _burn(_context, _account, _amount):
-    Require(_amount > 0)                # the amount to burn should be over 0
+    _ = Require(_amount > 0)                # the amount to burn should be over 0
 
     account_val = _balanceOf(_context, _account)
     total_supply = _totalSupply(_context)
 
-    Require(_amount < total_supply)     # should be not over total supply
+    _ = Require(_amount < total_supply)     # should be not over total supply
 
     # burn the token from account. It also subtract the total supply
     account_val = uSub(account_val, _amount)
     total_supply = uSub(total_supply, _amount)
 
-    SafePut(_context, concat(OWN_PREFIX, _account), account_val)
-    SafePut(_context, MZK_SUPPLY_KEY, total_supply)
+    account_key = concat(OWN_PREFIX, _account)
+    _ = SafePut(_context, account_key, account_val)
+    _ = SafePut(_context, MZK_SUPPLY_KEY, total_supply)
     return True
 
 
 def _mint(_context, _to, _amount):
-    Require(_amount > 0)            # mint value must be over 0
-    RequireScriptHash(_to)          # to address should
+    _ = Require(_amount > 0)            # mint value must be over 0
+    _ = RequireScriptHash(_to)          # to address should
 
     total_supply = _totalSupply(_context)
     to_val = _accountValue(_context, _to)
@@ -311,14 +346,16 @@ def _mint(_context, _to, _amount):
     total_supply += _amount
     to_val += _amount
 
-    SafePut(_context, MZK_SUPPLY_KEY, total_supply)
-    SafePut(_context, concat(OWN_PREFIX, _to), to_val)
+    _ = SafePut(_context, MZK_SUPPLY_KEY, total_supply)
+    to_account_key = concat(OWN_PREFIX, _to)
+    _ = SafePut(_context, to_account_key, to_val)
     return True
 
 
 def _transferOwnership(_context, _account):
-    RequireScriptHash(_account)
+    _ = RequireScriptHash(_account)
     Put(_context, OWNER_KEY, _account)
+    return True
 
 
 ################################################################################
@@ -329,19 +366,27 @@ def _onlyOwner(_context):
     Checks the invoker is the contract owner or not. Owner key is saved in the
     storage key `___OWNER`, so check its value and invoker.
     """
-    RequireWitness(Get(_context, OWNER_KEY))
+    owner = Get(_context, OWNER_KEY)
+    _ = RequireWitness(owner)
+    return True
 
 
 ################################################################################
 #
 
 def _accountValue(_context, _account):
-    return Get(_context, concat(OWN_PREFIX, _account))
+    account_key = concat(OWN_PREFIX, _account)
+    account_balance = Get(_context, account_key)
+    return account_balance
 
 
 def _totalSupply(_context):
-    return Get(_context, MZK_SUPPLY_KEY)
+    total_supply = Get(_context, MZK_SUPPLY_KEY)
+    return total_supply
 
 
 def _allowance(_context, _from, _to):
-    return Get(_context, concat(ALLOWANCE_PREFIX, concat(_from, _to)))
+    from_to_key = concat(_from, _to)
+    allowance_key = concat(ALLOWANCE_PREFIX, from_to_key)
+    allowance = Get(_context, allowance_key)
+    return allowance

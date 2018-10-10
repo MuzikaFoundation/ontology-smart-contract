@@ -306,7 +306,7 @@ describe('MuzikaCoin Contract', () => {
 
   it ('should not be able to be deployed by other.', async () => {
     const [ other ] = randomAccount;
-    const tx = TransactionBuilder.makeInvokeTransaction('Deploy', [], contract.address, '0', '20000', other.address);
+    const tx = TransactionBuilder.makeInvokeTransaction('deploy', [], contract.address, '0', '20000', other.address);
     TransactionBuilder.signTransaction(tx, other.privateKey);
 
     const txHash = (await client.sendRawTransaction(tx.serialize())).result;
@@ -319,7 +319,7 @@ describe('MuzikaCoin Contract', () => {
   it ('should deploy by deployer', async () => {
     const address = TestDeployer.forSign.address;
     const privateKey = TestDeployer.forSign.privateKey;
-    const tx = TransactionBuilder.makeInvokeTransaction('Deploy', [], contract.address, '0', '20000', address);
+    const tx = TransactionBuilder.makeInvokeTransaction('deploy', [], contract.address, '0', '20000', address);
     TransactionBuilder.signTransaction(tx, privateKey);
 
     const txHash = (await client.sendRawTransaction(tx.serialize())).result;

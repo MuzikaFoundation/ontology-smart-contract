@@ -14,5 +14,5 @@ def uSub(a, b):
     :param b: operand b
     :return: a - b if a - b > 0 or revert the transaction.
     """
-    Require(a >= b)
+    _ = Require(a >= b)
     return a - b

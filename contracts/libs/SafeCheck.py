@@ -11,7 +11,7 @@ def Require(condition):
     :return: True if satisfying the condition.
     """
     if not condition:
-        Revert()
+        _ = Revert()
     return True
 
 
@@ -22,7 +22,7 @@ def RequireScriptHash(key):
     :param key: bytearray parameter to check script hash format.
     :return: True if script hash or revert the transaction.
     """
-    Require(len(key) == 20)
+    _ = Require(len(key) == 20)
     return True
 
 
@@ -33,6 +33,6 @@ def RequireWitness(witness):
     :param witness: required transaction sender
     :return: True if transaction sender or revert the transaction.
     """
-    Require(CheckWitness(witness))
+    _ = Require(CheckWitness(witness))
     return True
 
