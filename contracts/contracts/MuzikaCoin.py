@@ -236,7 +236,7 @@ def TransferOwnership(_account):
     :param _account: address to transfer ownership.
     """
     ctx = GetContext()
-    _onlyOwner(ctx)
+    _ = _onlyOwner(ctx)
     transferred = _transferOwnership(ctx, _account)
     return transferred
 
@@ -306,13 +306,9 @@ def _approve(_context, _from, _to, _amount):
     _ = RequireScriptHash(_to)          # to-address validation
     _ = Require(_amount >= 0)           # amount must be not minus value
 
-    from_val = _accountValue(_context, _from)
-
-    _ = Require(from_val >= _amount)    # the token owner must have the amount over approved
-
     from_to_key = concat(_from, _to)
     approve_key = concat(ALLOWANCE_PREFIX, from_to_key)
-    SafePut(_context, approve_key, _amount)
+    _ = SafePut(_context, approve_key, _amount)
 
     return True
 

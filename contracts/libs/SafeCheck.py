@@ -33,6 +33,7 @@ def RequireWitness(witness):
     :param witness: required transaction sender
     :return: True if transaction sender or revert the transaction.
     """
-    _ = Require(CheckWitness(witness))
+    is_witness = CheckWitness(witness)
+    _ = Require(is_witness)
     return True
 
